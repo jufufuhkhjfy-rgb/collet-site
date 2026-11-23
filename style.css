@@ -1,0 +1,104 @@
+/* Collet 販売ページ。色と文字は Collet 本体と同じ */
+:root {
+  --bg: #F7F4EF; --surface: #FFFFFF; --line: #E8E2DA;
+  --ink: #172A33; --muted: #5E6B70;
+  --brand: #095D7B; --brand-soft: #E3EFF3; --on-brand: #FFFFFF;
+  --accent: #C2553A; --accent-soft: #FBE9E3;
+  --font-display: "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", system-ui, sans-serif;
+  --font-sans: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #10181C; --surface: #18242A; --line: #2A3A41;
+    --ink: #EEF3F4; --muted: #9AABB1;
+    --brand: #5FB3CF; --brand-soft: #183A47; --on-brand: #0E1A1F;
+    --accent: #F08A6C; --accent-soft: #3E2219;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--ink); font: 400 16px/28px var(--font-sans); }
+h1, h2, h3 { font-family: var(--font-display); margin: 0; text-wrap: balance; }
+p { margin: 0; }
+a { color: var(--brand); }
+.wrap { max-width: 920px; margin: 0 auto; padding: 0 16px; }
+
+.top { display: flex; align-items: center; gap: 8px; padding: 20px 0; }
+.top img { width: 36px; height: 36px; border-radius: 50%; background: var(--surface); }
+.top span { font: 800 20px/1 var(--font-display); }
+.top a { color: inherit; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+
+.hero { display: grid; gap: 20px; padding: 48px 0 56px; }
+.hero h1 { font-size: clamp(28px, 6vw, 44px); line-height: 1.3; font-weight: 800; }
+.hero h1 em { font-style: normal; color: var(--brand); }
+.hero p { color: var(--muted); max-width: 40em; }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.btn {
+  display: inline-block; font: 700 16px/24px var(--font-sans); text-decoration: none;
+  border-radius: 999px; padding: 14px 28px; border: 1px solid transparent;
+}
+.btn.primary { background: var(--accent); color: var(--on-brand); }
+.btn.ghost { background: var(--surface); color: var(--ink); border-color: var(--line); }
+.btn:hover { filter: brightness(1.06); }
+.note { font-size: 13px; line-height: 20px; color: var(--muted); }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 16px; }
+.card {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 24px;
+  padding: 24px; display: grid; gap: 8px; align-content: start;
+}
+.card h3 { font-size: 18px; line-height: 26px; }
+.card p { color: var(--muted); font-size: 15px; line-height: 24px; }
+section { padding: 32px 0; display: grid; gap: 20px; }
+section > h2 { font-size: 24px; line-height: 32px; }
+
+.plans { grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
+.plans .card { justify-items: start; gap: 12px; }
+.plans .amount { font: 800 36px/1.2 var(--font-display); color: var(--ink); }
+.plans .amount small { display: inline-block; white-space: nowrap; }
+.plans ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+.plans .btn { margin-top: auto; }
+.price { display: grid; gap: 12px; justify-items: start; border-color: var(--brand); }
+.price .amount { font: 800 40px/1.1 var(--font-display); color: var(--ink); }
+.price .amount small { font: 400 16px/1 var(--font-sans); color: var(--muted); }
+.price ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+
+.promise { background: var(--brand-soft); border-color: transparent; }
+.promise li { margin-bottom: 4px; }
+
+/* 購入後のページ */
+.thanks { padding: 24px 0 48px; display: grid; gap: 24px; max-width: 680px; }
+.thanks h1 { font-size: 28px; line-height: 36px; }
+.thanks .card h2 { font-size: 20px; line-height: 28px; }
+.thanks .card p { color: var(--ink); }
+.thanks .card p.note { color: var(--muted); }
+.thanks ol { margin: 0; padding-left: 1.4em; display: grid; gap: 4px; }
+.status-line { display: flex; align-items: center; gap: 12px; }
+.spinner { width: 20px; height: 20px; border-radius: 50%; border: 3px solid var(--brand-soft); border-top-color: var(--brand); animation: spin 1s linear infinite; flex: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+.ready { border-color: var(--brand); gap: 16px; }
+.key-box { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.key-box code {
+  flex: 1 1 260px; min-width: 0; overflow-wrap: anywhere; font: 13px/20px ui-monospace, Consolas, monospace;
+  background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 12px;
+}
+
+/* 特定商取引法に基づく表記 */
+.legal { padding: 24px 0 48px; display: grid; gap: 24px; }
+.legal h1 { font-size: 28px; line-height: 36px; }
+table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+th, td { text-align: left; vertical-align: top; padding: 16px; border-top: 1px solid var(--line); font-size: 15px; line-height: 24px; }
+tr:first-child th, tr:first-child td { border-top: 0; }
+th { width: 30%; font-weight: 700; background: var(--bg); }
+@media (max-width: 640px) {
+  table, tbody, tr, th, td { display: block; width: 100%; }
+  td { border-top: 0; padding-top: 0; }
+  th { background: transparent; padding-bottom: 4px; }
+}
+
+.foot { border-top: 1px solid var(--line); padding: 24px 0 40px; display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: 13px; color: var(--muted); }
+.foot a { color: var(--muted); }

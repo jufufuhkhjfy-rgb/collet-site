@@ -1,0 +1,119 @@
+<!doctype html>
+<!--
+  支払いが終わったあとに開くページ。Stripe の決済用リンクの「支払い後」に、
+  thanks.html?session_id={CHECKOUT_SESSION_ID} を設定する。
+  作者のPCの Collet が支払いを見つけると、k/ に利用キー（暗号化したもの）を置く。
+  このページはそれを自動で探して、見つかったら開いて表示する。
+  開くための合言葉は、URLに入っている支払いの番号なので、買った本人にしか開けない。
+-->
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>ご購入ありがとうございます｜Collet</title>
+  <link rel="icon" href="icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800&family=Noto+Sans+JP:wght@400;700&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a href="index.html"><img src="icon.png" alt=""><span>Collet</span></a>
+  </header>
+
+  <main class="thanks">
+    <h1>ご購入ありがとうございます</h1>
+
+    <article id="waiting" class="card">
+      <h2 class="status-line"><span class="spinner" aria-hidden="true"></span>利用キーを準備しています</h2>
+      <p>このページを開いたままにしておくと、準備ができしだい、ここに利用キーが自動で表示されます。ふつうは数分で表示されます。</p>
+      <p id="slow" class="note" hidden>時間がかかっています。このページのURLをブックマークしておけば、閉じても、あとで開き直したときに表示されます。24時間たっても表示されないときは、<a href="tokushoho.html">問い合わせ先</a>までご連絡ください。</p>
+    </article>
+
+    <article id="ready" class="card ready" hidden>
+      <h2>利用キーができました</h2>
+      <p id="plan-line"></p>
+      <div class="key-box">
+        <code id="key"></code>
+        <button id="copy" class="btn primary" type="button">コピー</button>
+      </div>
+      <ol>
+        <li>Collet を開いて、左の「投稿設定」を押す</li>
+        <li>「有料プラン」の欄に、利用キーを貼り付けて「利用キーを入れる」を押す</li>
+      </ol>
+      <p class="note">毎月の更新のあとは、Collet が新しい利用キーを自動で受け取ります。もう一度入れ直す必要はありません。</p>
+    </article>
+
+    <article id="error" class="card" hidden>
+      <h2>このページのURLが正しくありません</h2>
+      <p>お支払いのあとに表示されたページから、もう一度開いてください。わからないときは、<a href="tokushoho.html">問い合わせ先</a>までご連絡ください。</p>
+    </article>
+  </main>
+
+  <footer class="foot">
+    <a href="index.html">Collet のトップへ</a>
+    <a href="tokushoho.html">特定商取引法に基づく表記</a>
+  </footer>
+</div>
+
+<script>
+// Collet の keybox.py と同じ決まりで、置き場所と開くための鍵を作る
+const sessionId = new URLSearchParams(location.search).get("session_id") || "";
+const show = (id) => { for (const s of ["waiting", "ready", "error"]) document.getElementById(s).hidden = s !== id; };
+const sha256 = async (text) => new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text)));
+const hex = (bytes) => Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+const fromB64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+const PLAN_NAMES = { standard: "スタンダードプラン", image: "画像生成プラン" };
+
+async function tryOpen() {
+  const name = hex(await sha256(`collet-claim-name:${sessionId}`)).slice(0, 32);
+  const res = await fetch(`k/${name}.json?t=${Date.now()}`, { cache: "no-store" });
+  if (!res.ok) return null;
+  const box = await res.json();
+  const key = await crypto.subtle.importKey("raw", await sha256(`collet-claim-key:${sessionId}`), "AES-GCM", false, ["decrypt"]);
+  const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: fromB64(box.n) }, key, fromB64(box.c));
+  return JSON.parse(new TextDecoder().decode(plain));
+}
+
+function showKey(data) {
+  document.getElementById("key").textContent = data.key;
+  const [y, m, d] = data.until.split("-").map(Number);
+  document.getElementById("plan-line").textContent =
+    `${PLAN_NAMES[data.plan] || "有料プラン"}の利用キーです（${y}年${m}月${d}日まで。毎月自動で更新されます）。`;
+  show("ready");
+}
+
+document.getElementById("copy").onclick = async (e) => {
+  const text = document.getElementById("key").textContent;
+  try {
+    await navigator.clipboard.writeText(text);
+    e.currentTarget.textContent = "コピーしました";
+  } catch {
+    const range = document.createRange();
+    range.selectNodeContents(document.getElementById("key"));
+    getSelection().removeAllRanges();
+    getSelection().addRange(range);
+    e.currentTarget.textContent = "選択したので Ctrl+C でコピー";
+  }
+};
+
+async function start() {
+  if (!/^cs_[A-Za-z0-9_]+$/.test(sessionId)) return show("error");
+  const started = Date.now();
+  for (;;) {
+    try {
+      const data = await tryOpen();
+      if (data) return showKey(data);
+    } catch (e) {
+      console.warn(e);
+    }
+    if (Date.now() - started > 10 * 60 * 1000) document.getElementById("slow").hidden = false;
+    await new Promise((r) => setTimeout(r, 15000));
+  }
+}
+start();
+</script>
+</body>
+</html>
