@@ -66,6 +66,16 @@ section > h2 { font-size: 24px; line-height: 32px; }
 .price .amount small { font: 400 16px/1 var(--font-sans); color: var(--muted); }
 .price ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
 
+/* 見本の画面と画像 */
+figure { margin: 0; }
+figcaption { font-size: 13px; line-height: 20px; color: var(--muted); margin-top: 8px; }
+.shot img {
+  display: block; width: 100%; height: auto; border-radius: 16px;
+  border: 1px solid var(--line); box-shadow: 0 12px 32px rgb(23 42 51 / 0.12);
+}
+.gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 16px; }
+.gallery img { display: block; width: 100%; height: auto; border-radius: 16px; border: 1px solid var(--line); }
+
 /* はじめ方：番号つきのカード */
 .steps {
   list-style: none; margin: 0; padding: 0; counter-reset: step;
